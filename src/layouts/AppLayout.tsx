@@ -1,0 +1,101 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { Link, Navigate, NavLink, Outlet, useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { LuKanban, LuLogOut, LuPlus, LuUserRound } from "react-icons/lu"
+
+import { Wordmark } from "@/components/common/navigation"
+import { ThemeToggle } from "@/components/common/navigation"
+import { Button } from "@/components/common/button"
+import { logout } from "@/services/authService"
+import { NewProjectDialog } from "@/components/common/modal"
+import { useProjects } from "@/hooks/useProjects"
+import { ME_KEY, useMe } from "@/hooks/useAuth"
+import { cn } from "@/utils/cn"
+
+export function AppLayout() {
+  const { data: user, isPending } = useMe()
+  const qc = useQueryClient()
+  const { data: projects } = useProjects()
+  const [newProject, setNewProject] = useState(false)
+  const navigate = useNavigate()
+
+  const out = useMutation({
+    mutationFn: logout,
+    onSettled: () => {
+      qc.setQueryData(ME_KEY, null)
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "me" })
+      navigate("/login", { replace: true })
+    },
+  })
+
+  if (isPending) return <div className="grid min-h-dvh place-items-center text-sm text-muted-foreground">Loading</div>
+  if (!user) return <Navigate to="/login" replace />
+
+  return (
+    <div className="grid min-h-dvh grid-cols-1 md:grid-cols-[220px_1fr]">
+      <aside className="flex flex-col gap-1 border-b border-border bg-side p-3 md:sticky md:top-0 md:h-dvh md:overflow-y-auto md:border-r md:border-b-0">
+        <div className="flex items-center justify-between px-2 pt-1 pb-3 md:block">
+          <Wordmark />
+        </div>
+        <nav aria-label="Projects" className="flex gap-1 overflow-x-auto md:flex-col">
+          <span className="hidden px-2.5 pt-3 pb-1 font-mono text-[10px] tracking-widest text-faint uppercase md:block">Projects</span>
+          {(projects ?? []).map((p) => (
+            <NavLink
+              key={p.slug}
+              to={`/projects/${p.slug}`}
+              className={({ isActive }) =>
+                cn(
+                  "flex h-9 shrink-0 items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                  isActive && "bg-secondary text-foreground shadow-[inset_2px_0_0_var(--primary)]",
+                )
+              }
+            >
+              <LuKanban className="size-4 shrink-0" aria-hidden="true" />
+              <span className="truncate">{p.name}</span>
+              <span className="ml-auto font-mono text-[11px] text-faint">{p.ticketCount}</span>
+            </NavLink>
+          ))}
+          <button
+            type="button"
+            onClick={() => setNewProject(true)}
+            className="flex h-9 shrink-0 items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+          >
+            <LuPlus className="size-4" aria-hidden="true" />
+            New project
+          </button>
+        </nav>
+        <NewProjectDialog open={newProject} onOpenChange={setNewProject} />
+        <nav aria-label="Settings" className="mt-auto hidden flex-col gap-1 border-t border-border pt-3 md:flex">
+          <NavLink
+            to="/account"
+            className={({ isActive }) =>
+              cn(
+                "flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                isActive && "bg-secondary text-foreground shadow-[inset_2px_0_0_var(--primary)]",
+              )
+            }
+          >
+            <LuUserRound className="size-4" aria-hidden="true" />
+            Account
+          </NavLink>
+        </nav>
+      </aside>
+      <div className="flex min-w-0 flex-col">
+        <header className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-5 py-3">
+          <ThemeToggle />
+          <Link to="/account" className="rounded-md px-1.5 py-0.5 text-right text-sm leading-tight hover:bg-secondary max-sm:sr-only" aria-label="Your account">
+            <div className="font-medium">{user.displayName}</div>
+            <div className="font-mono text-xs text-muted-foreground">{user.email}</div>
+          </Link>
+          <Button variant="outline" size="lg" onClick={() => out.mutate()} disabled={out.isPending} aria-label="Sign out">
+            <LuLogOut data-icon="inline-start" />
+            Sign out
+          </Button>
+        </header>
+        <main className="flex-1 p-5">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  )
+}
