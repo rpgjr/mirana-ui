@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import * as api from "@/services/projectService"
-import type { Board, NewTicket, TicketCard, TicketDetail, TicketPatch } from "@/types/project"
+import type { Board, NewTicket, TicketCard, TicketDetail, TicketFormat, TicketPatch } from "@/types/project"
 
 export const projectsKey = ["projects"] as const
 export const boardKey = (slug: string) => ["board", slug] as const
@@ -19,15 +19,17 @@ export function useCreateProject() {
   return useMutation({ mutationFn: api.createProject, onSuccess: () => qc.invalidateQueries({ queryKey: projectsKey }) })
 }
 
-export function useRepoMutations(slug: string) {
+export function useProjectSettings(slug: string) {
   const qc = useQueryClient()
   const done = () => {
     qc.invalidateQueries({ queryKey: boardKey(slug) })
     qc.invalidateQueries({ queryKey: projectsKey })
+    qc.invalidateQueries({ queryKey: ["github"] })
   }
   return {
-    add: useMutation({ mutationFn: (repo: string) => api.addRepo(slug, repo), onSuccess: done }),
-    remove: useMutation({ mutationFn: (repo: string) => api.removeRepo(slug, repo), onSuccess: done }),
+    rename: useMutation({ mutationFn: (name: string) => api.renameProject(slug, name), onSuccess: done }),
+    setFormat: useMutation({ mutationFn: (f: TicketFormat) => api.setTicketFormat(slug, f), onSuccess: done }),
+    setRepos: useMutation({ mutationFn: (repos: string[]) => api.setRepos(slug, repos), onSuccess: done }),
   }
 }
 

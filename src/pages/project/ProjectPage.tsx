@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom"
-import { LuKanban, LuListChecks, LuPlus } from "react-icons/lu"
+import { LuKanban, LuListChecks, LuPlus, LuSettings } from "react-icons/lu"
 
 import { Button } from "@/components/common/button"
 import { ApiError } from "@/services/apiClient"
@@ -32,7 +32,7 @@ export function ProjectPage({ view }: { view: "board" | "list" }) {
       <div className="flex flex-wrap items-center gap-3">
         <div className="mr-auto flex min-w-0 flex-col">
           <h1 className="text-xl font-semibold">{board.project.name}</h1>
-          <RepoList slug={slug} repos={board.project.repos} canEdit={board.project.role === "OWNER"} />
+          <RepoList repos={board.project.repos} />
         </div>
         <div role="tablist" aria-label="View" className="inline-flex rounded-lg border border-input bg-card p-0.5">
           {tabs.map(({ to, label, Icon, on }) => (
@@ -48,6 +48,9 @@ export function ProjectPage({ view }: { view: "board" | "list" }) {
             </Link>
           ))}
         </div>
+        <Button variant="outline" size="icon-lg" render={<Link to={`/projects/${slug}/settings`} />} aria-label="Project settings" title="Project settings">
+          <LuSettings />
+        </Button>
         <Button size="lg" onClick={() => setCreating(true)} className="h-9">
           <LuPlus data-icon="inline-start" />
           New ticket

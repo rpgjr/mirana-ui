@@ -120,7 +120,7 @@ function Card({ ticket, basePath, dragProps, overlay }: { ticket: TicketCard; ba
     >
       <span className="text-[13.5px] leading-snug text-foreground">{ticket.title}</span>
       <span className="flex items-center gap-2.5 font-mono text-[11px] text-muted-foreground">
-        <KeyChip ticketKey={ticket.key} />
+        <KeyChip ticketKey={ticket.key} type={ticket.type} />
         <PrBadge count={ticket.prCount} state={ticket.prState} />
         {ticket.commentCount > 0 && (
           <span className="inline-flex items-center gap-1">

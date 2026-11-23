@@ -39,10 +39,18 @@ export interface Column {
   tickets: TicketCard[]
 }
 
+export interface TicketFormat {
+  digits: number
+  featurePrefix: string
+  hotfixPrefix: string
+  bugfixPrefix: string
+}
+
 export interface Board {
   project: ProjectSummary
   columns: Column[]
   members: Member[]
+  format: TicketFormat
 }
 
 export interface PrLink {

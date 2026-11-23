@@ -57,7 +57,7 @@ export function TicketBody({ board, ticket, showNewTab }: { board: Board; ticket
     <div className="flex flex-col gap-6 p-5 pb-8 sm:p-7">
       <div className="flex flex-col gap-3 pr-10">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <KeyChip ticketKey={ticket.key} className="text-xs" />
+          <KeyChip ticketKey={ticket.key} type={ticket.type} className="text-xs" />
           <span className="text-xs text-muted-foreground">
             {TYPE_LABEL[ticket.type]} · created {timeAgo(ticket.createdAt)}
             {ticket.createdByName ? ` by ${ticket.createdByName}` : ""}
@@ -96,7 +96,7 @@ export function TicketBody({ board, ticket, showNewTab }: { board: Board; ticket
             <h3 id="prs" className="font-mono text-xs tracking-wide text-muted-foreground uppercase">Pull requests</h3>
             {ticket.pullRequests.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
-                None yet. Name a branch <span className="font-mono text-foreground">{ticket.key}-short-name</span> and its pull request shows up here.
+                None yet. Name a branch <span className="font-mono text-foreground">{ticket.key}</span> and its pull request shows up here.
               </p>
             ) : (
               ticket.pullRequests.map((p) => <PrRow key={p.id} pr={p} />)

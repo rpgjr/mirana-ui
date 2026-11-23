@@ -19,7 +19,7 @@ export function HomePage() {
         <LuKanban className="size-6" />
       </span>
       <h1 className="text-2xl font-semibold text-balance">Create your first project</h1>
-      <p className="text-muted-foreground">A project holds one Kanban board. Ticket numbers like FT-101 count up inside it.</p>
+      <p className="text-muted-foreground">A project holds one Kanban board. Ticket numbers like FT-00001 count up inside it.</p>
       <Button size="lg" onClick={() => setOpen(true)} className="h-10">
         <LuPlus data-icon="inline-start" />
         New project

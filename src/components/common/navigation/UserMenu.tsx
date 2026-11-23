@@ -72,8 +72,8 @@ export function UserMenu({ name, email, onSignOut, signingOut }: { name: string;
               <LuSettings className="size-4 text-muted-foreground" aria-hidden="true" />
               Settings
             </Link>
-            <button type="button" role="menuitem" disabled={signingOut} onClick={onSignOut} className={cn(ITEM, "disabled:opacity-50")}>
-              <LuLogOut className="size-4 text-muted-foreground" aria-hidden="true" />
+            <button type="button" role="menuitem" disabled={signingOut} onClick={onSignOut} className={cn(ITEM, "text-destructive hover:bg-destructive/10 focus-visible:bg-destructive/10 disabled:opacity-50")}>
+              <LuLogOut className="size-4" aria-hidden="true" />
               Sign out
             </button>
           </div>

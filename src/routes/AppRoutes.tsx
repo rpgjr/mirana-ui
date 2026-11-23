@@ -10,6 +10,7 @@ import { HomePage } from "@/pages/home"
 import { LoginPage } from "@/pages/login"
 import { NotFound } from "@/pages/not-found"
 import { ProjectPage } from "@/pages/project"
+import { ProjectSettingsPage } from "@/pages/project-settings"
 import { RegisterPage } from "@/pages/register"
 import { ResetPage } from "@/pages/reset"
 import { TicketPage } from "@/pages/ticket"
@@ -33,6 +34,7 @@ export function AppRoutes() {
           <Route path="github/callback" element={<GithubCallbackPage />} />
         </Route>
         <Route path="projects/:slug" element={<ProjectPage view="board" />} />
+        <Route path="projects/:slug/settings" element={<ProjectSettingsPage />} />
         <Route path="projects/:slug/t/:key" element={<ProjectPage view="board" />} />
         <Route path="projects/:slug/tickets/:key" element={<TicketPage />} />
         <Route path="projects/:slug/list" element={<ProjectPage view="list" />} />

@@ -14,10 +14,10 @@ import type { Board, Priority, TicketType } from "@/types/project"
 import { useCreateTicket } from "@/hooks/useProjects"
 import { PRIORITIES, PRIORITY_LABEL, TYPE_LABEL } from "@/constants/ticket"
 
-const TYPES: { value: TicketType; prefix: string; style: string }[] = [
-  { value: "FEATURE", prefix: "FT", style: "data-[on=true]:border-ft data-[on=true]:bg-ft/10 data-[on=true]:text-ft" },
-  { value: "HOTFIX", prefix: "HF", style: "data-[on=true]:border-hf data-[on=true]:bg-hf/10 data-[on=true]:text-hf" },
-  { value: "BUGFIX", prefix: "BUG", style: "data-[on=true]:border-bug data-[on=true]:bg-bug/10 data-[on=true]:text-bug" },
+const TYPES: { value: TicketType; style: string }[] = [
+  { value: "FEATURE", style: "data-[on=true]:border-ft data-[on=true]:bg-ft/10 data-[on=true]:text-ft" },
+  { value: "HOTFIX", style: "data-[on=true]:border-hf data-[on=true]:bg-hf/10 data-[on=true]:text-hf" },
+  { value: "BUGFIX", style: "data-[on=true]:border-bug data-[on=true]:bg-bug/10 data-[on=true]:text-bug" },
 ]
 
 export function NewTicketDialog({ board, open, onOpenChange, onCreated }: {
@@ -81,7 +81,7 @@ export function NewTicketDialog({ board, open, onOpenChange, onCreated }: {
                 className={cn("flex h-11 flex-col items-center justify-center rounded-lg border border-input text-xs text-muted-foreground transition-colors hover:text-foreground", t.style)}
               >
                 <span className="font-medium">{TYPE_LABEL[t.value]}</span>
-                <span className="font-mono text-[10px] opacity-80">{t.prefix}-</span>
+                <span className="font-mono text-[10px] opacity-80">{({ FEATURE: board.format.featurePrefix, HOTFIX: board.format.hotfixPrefix, BUGFIX: board.format.bugfixPrefix })[t.value]}-</span>
               </button>
             ))}
           </div>

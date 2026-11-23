@@ -27,7 +27,7 @@ export function ListView({ board, basePath }: { board: Board; basePath: string }
         <tbody>
           {rows.map((t) => (
             <tr key={t.key} className="border-b border-border last:border-0 hover:bg-secondary/60">
-              <td className="px-4 py-2.5"><KeyChip ticketKey={t.key} /></td>
+              <td className="px-4 py-2.5"><KeyChip ticketKey={t.key} type={t.type} /></td>
               <td className="px-4 py-2.5">
                 <Link to={`${basePath}/t/${t.key}`} className="font-medium hover:text-primary hover:underline">{t.title}</Link>
               </td>

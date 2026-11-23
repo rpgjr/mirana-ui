@@ -1,9 +1,15 @@
 import { api } from "@/services/apiClient"
-import type { Board, NewTicket, ProjectSummary, TicketDetail, TicketPatch } from "@/types/project"
+import type { Board, NewTicket, ProjectSummary, TicketDetail, TicketFormat, TicketPatch } from "@/types/project"
 
 export const listProjects = async () => (await api.get<ProjectSummary[]>("/api/projects")).data
 export const createProject = async (b: { name: string; repos: string[] }) =>
   (await api.post<ProjectSummary>("/api/projects", b)).data
+export const renameProject = async (slug: string, name: string) =>
+  (await api.patch<ProjectSummary>(`/api/projects/${slug}`, { name })).data
+export const setTicketFormat = async (slug: string, f: TicketFormat) =>
+  (await api.put<TicketFormat>(`/api/projects/${slug}/ticket-format`, f)).data
+export const setRepos = async (slug: string, repos: string[]) =>
+  (await api.put<string[]>(`/api/projects/${slug}/repos`, { repos })).data
 export const addRepo = async (slug: string, repo: string) =>
   (await api.post<string[]>(`/api/projects/${slug}/repos`, { repo })).data
 export const removeRepo = async (slug: string, repo: string) =>
