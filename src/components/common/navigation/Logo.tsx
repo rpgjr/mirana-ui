@@ -1,17 +1,19 @@
 import { cn } from "@/utils/cn"
 
-/** Placeholder mark until the tiger-and-archer logo is drawn. */
+/** Crescent moon that doubles as a bow, with an arrow through it. The moon follows the text color. */
 export function LogoMark({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" className={cn("size-7", className)}>
-      <path
-        d="M4 8l5 3c2-1 5-1.5 7-1.5S21 10 23 11l5-3-1 8c1 3 0 7-3 9l-3 4h-10l-3-4c-3-2-4-6-3-9z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinejoin="round"
-      />
-      <path d="M11 17h2M19 17h2M14 22l2 1.5 2-1.5M16 6v3" stroke="var(--primary)" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <svg viewBox="0 0 64 64" fill="none" aria-hidden="true" className={cn("size-7", className)}>
+      <defs>
+        <mask id="mirana-moon">
+          <rect width="64" height="64" fill="#fff" />
+          <circle cx="41" cy="25" r="19" fill="#000" />
+        </mask>
+      </defs>
+      <circle cx="30" cy="34" r="23" fill="currentColor" mask="url(#mirana-moon)" />
+      <path d="M13 53L52 14" stroke="#e0b86a" strokeWidth="3.2" strokeLinecap="round" />
+      <path d="M52 14l-12 2.5 9.5 9.5z" fill="#e0b86a" />
+      <path d="M13 53l-1-8M13 53l8 1M18 48l-1-6M18 48l6 1" stroke="#e0b86a" strokeWidth="2.4" strokeLinecap="round" />
     </svg>
   )
 }

@@ -1,11 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Link, Navigate, NavLink, Outlet, useNavigate } from "react-router-dom"
+import { Navigate, NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { LuKanban, LuLogOut, LuPlus, LuSettings } from "react-icons/lu"
+import { LuKanban, LuPlus, LuSettings } from "react-icons/lu"
 
 import { Wordmark } from "@/components/common/navigation"
-import { ThemeToggle } from "@/components/common/navigation"
-import { Button } from "@/components/common/button"
+import { UserMenu } from "@/components/common/navigation"
 import { logout } from "@/services/authService"
 import { NewProjectDialog } from "@/components/common/modal"
 import { useProjects } from "@/hooks/useProjects"
@@ -81,16 +80,8 @@ export function AppLayout() {
         </nav>
       </aside>
       <div className="flex min-w-0 flex-col">
-        <header className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-5 py-3">
-          <ThemeToggle />
-          <Link to="/settings/account" className="rounded-md px-1.5 py-0.5 text-right text-sm leading-tight hover:bg-secondary max-sm:sr-only" aria-label="Your account">
-            <div className="font-medium">{user.displayName}</div>
-            <div className="font-mono text-xs text-muted-foreground">{user.email}</div>
-          </Link>
-          <Button variant="outline" size="lg" onClick={() => out.mutate()} disabled={out.isPending} aria-label="Sign out">
-            <LuLogOut data-icon="inline-start" />
-            Sign out
-          </Button>
+        <header className="flex items-center justify-end border-b border-border px-5 py-2.5">
+          <UserMenu name={user.displayName} email={user.email} onSignOut={() => out.mutate()} signingOut={out.isPending} />
         </header>
         <main className="flex-1 p-5">
           <Outlet />

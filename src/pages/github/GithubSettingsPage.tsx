@@ -2,7 +2,7 @@ import { LuGithub, LuPlus } from "react-icons/lu"
 import { toast } from "sonner"
 
 import { Button } from "@/components/common/button"
-import { InstallationList, RepoTable, SetupGuide } from "@/components/github"
+import { InstallationList, RepoTable } from "@/components/github"
 import { useGithubDisconnect, useGithubRepos, useGithubStatus } from "@/hooks/useGithub"
 import { ApiError } from "@/services/apiClient"
 
@@ -29,11 +29,8 @@ export function GithubSettingsPage() {
 
   if (!status.enabled) {
     return (
-      <Section
-        title="Set up GitHub for Mirana"
-        description="One time setup by whoever runs this server. After it, every user connects with one click and never handles keys."
-      >
-        <SetupGuide />
+      <Section title="GitHub" description="GitHub connect is not available yet.">
+        <p className="text-sm text-muted-foreground">The server has not been set up for GitHub. Try again later. Pull request links from the webhook still work.</p>
       </Section>
     )
   }
