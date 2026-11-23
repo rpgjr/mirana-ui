@@ -3,11 +3,14 @@ import { toast } from "sonner"
 import { LuGitBranch, LuPlus, LuX } from "react-icons/lu"
 
 import { Input } from "@/components/common/input"
+import { useGithubRepos, useGithubStatus } from "@/hooks/useGithub"
 import { useRepoMutations } from "@/hooks/useProjects"
 import { ApiError } from "@/services/apiClient"
 
 export function RepoList({ slug, repos, canEdit }: { slug: string; repos: string[]; canEdit: boolean }) {
   const { add, remove } = useRepoMutations(slug)
+  const { data: github } = useGithubStatus()
+  const { data: suggestions } = useGithubRepos(!!github?.installations.length)
   const [adding, setAdding] = useState(false)
   const [value, setValue] = useState("")
 
@@ -45,7 +48,10 @@ export function RepoList({ slug, repos, canEdit }: { slug: string; repos: string
       )}
       {canEdit && adding && (
         <form onSubmit={submit} className="flex items-center gap-1.5">
-          <Input autoFocus value={value} onChange={(e) => setValue(e.target.value)} placeholder="owner/repo" aria-label="Repository" className="h-7 w-48 font-mono text-xs" />
+          <Input autoFocus value={value} onChange={(e) => setValue(e.target.value)} placeholder="owner/repo" aria-label="Repository" list={`repos-${slug}`} className="h-7 w-48 font-mono text-xs" />
+          <datalist id={`repos-${slug}`}>
+            {(suggestions ?? []).filter((r) => !r.projectSlug).map((r) => <option key={r.fullName} value={r.fullName} />)}
+          </datalist>
         </form>
       )}
     </div>

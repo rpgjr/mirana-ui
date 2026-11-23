@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Link, Navigate, NavLink, Outlet, useNavigate } from "react-router-dom"
 import { useState } from "react"
-import { LuKanban, LuLogOut, LuPlus, LuUserRound } from "react-icons/lu"
+import { LuKanban, LuLogOut, LuPlus, LuSettings } from "react-icons/lu"
 
 import { Wordmark } from "@/components/common/navigation"
 import { ThemeToggle } from "@/components/common/navigation"
@@ -67,7 +67,7 @@ export function AppLayout() {
         <NewProjectDialog open={newProject} onOpenChange={setNewProject} />
         <nav aria-label="Settings" className="mt-auto hidden flex-col gap-1 border-t border-border pt-3 md:flex">
           <NavLink
-            to="/account"
+            to="/settings"
             className={({ isActive }) =>
               cn(
                 "flex h-9 items-center gap-2.5 rounded-md px-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
@@ -75,15 +75,15 @@ export function AppLayout() {
               )
             }
           >
-            <LuUserRound className="size-4" aria-hidden="true" />
-            Account
+            <LuSettings className="size-4" aria-hidden="true" />
+            Settings
           </NavLink>
         </nav>
       </aside>
       <div className="flex min-w-0 flex-col">
         <header className="flex flex-wrap items-center justify-end gap-3 border-b border-border px-5 py-3">
           <ThemeToggle />
-          <Link to="/account" className="rounded-md px-1.5 py-0.5 text-right text-sm leading-tight hover:bg-secondary max-sm:sr-only" aria-label="Your account">
+          <Link to="/settings/account" className="rounded-md px-1.5 py-0.5 text-right text-sm leading-tight hover:bg-secondary max-sm:sr-only" aria-label="Your account">
             <div className="font-medium">{user.displayName}</div>
             <div className="font-mono text-xs text-muted-foreground">{user.email}</div>
           </Link>

@@ -24,11 +24,7 @@ export function AccountPage() {
   const { data: account, isPending } = useQuery({ queryKey: ACCOUNT_KEY, queryFn: getAccount })
   if (isPending || !account) return <p className="text-sm text-muted-foreground">Loading account</p>
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <div>
-        <h1 className="text-xl font-semibold">Account</h1>
-        <p className="text-sm text-muted-foreground">Your profile, password and the browsers you have approved.</p>
-      </div>
+    <div className="flex flex-col gap-6">
       <ProfileCard name={account.displayName} email={account.email} verified={account.emailVerified} since={account.createdAt} />
       <PasswordCard email={account.email} changedAt={account.passwordChangedAt} />
       <DevicesCard />
