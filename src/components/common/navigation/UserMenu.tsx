@@ -55,7 +55,7 @@ export function UserMenu({ name, email, onSignOut, signingOut }: { name: string;
       </button>
 
       {open && (
-        <div role="menu" aria-label="Account menu" className="absolute right-0 z-50 mt-1.5 w-60 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg">
+        <div role="menu" aria-label="Account menu" className="pop-in absolute right-0 z-50 mt-1.5 w-60 rounded-xl border border-border bg-popover p-1.5 text-popover-foreground shadow-lg">
           <div className="truncate px-2.5 pt-1.5 pb-2 font-mono text-xs text-muted-foreground">{email}</div>
           <div className="border-t border-border pt-1.5">
             <div className="px-2.5 pb-1 font-mono text-[10px] tracking-widest text-faint uppercase">Theme</div>

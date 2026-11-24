@@ -11,11 +11,17 @@ import { useProjects } from "@/hooks/useProjects"
 import { ME_KEY, useMe } from "@/hooks/useAuth"
 import { cn } from "@/utils/cn"
 
+/** What a page can use from the shell. headerSlot is the left side of the top bar, where a page may render its own heading. */
+export interface AppLayoutContext {
+  headerSlot: HTMLElement | null
+}
+
 export function AppLayout() {
   const { data: user, isPending } = useMe()
   const qc = useQueryClient()
   const { data: projects } = useProjects()
   const [newProject, setNewProject] = useState(false)
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null)
   const navigate = useNavigate()
 
   const out = useMutation({
@@ -31,7 +37,7 @@ export function AppLayout() {
   if (!user) return <Navigate to="/login" replace />
 
   return (
-    <div className="grid min-h-dvh grid-cols-1 md:grid-cols-[220px_1fr]">
+    <div className="grid min-h-dvh grid-cols-1 md:h-dvh md:grid-cols-[220px_1fr] md:overflow-hidden">
       <aside className="flex flex-col gap-1 border-b border-border bg-side p-3 md:sticky md:top-0 md:h-dvh md:overflow-y-auto md:border-r md:border-b-0">
         <div className="flex items-center justify-between px-2 pt-1 pb-3 md:block">
           <Wordmark />
@@ -79,12 +85,13 @@ export function AppLayout() {
           </NavLink>
         </nav>
       </aside>
-      <div className="flex min-w-0 flex-col">
-        <header className="flex items-center justify-end border-b border-border px-5 py-2.5">
+      <div className="flex min-w-0 flex-col md:min-h-0">
+        <header className="flex min-h-14 items-center gap-4 border-b border-border px-5 py-2.5">
+          <div ref={setHeaderSlot} className="flex min-w-0 flex-1 items-center" />
           <UserMenu name={user.displayName} email={user.email} onSignOut={() => out.mutate()} signingOut={out.isPending} />
         </header>
-        <main className="flex-1 p-5">
-          <Outlet />
+        <main className="thin-scroll flex-1 p-5 md:min-h-0 md:overflow-y-auto">
+          <Outlet context={{ headerSlot } satisfies AppLayoutContext} />
         </main>
       </div>
     </div>

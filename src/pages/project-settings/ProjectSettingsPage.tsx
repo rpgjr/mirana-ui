@@ -6,7 +6,8 @@ import { toast } from "sonner"
 import { Button } from "@/components/common/button"
 import { Label } from "@/components/common/form"
 import { Input } from "@/components/common/input"
-import { NativeSelect, RepoPicker } from "@/components/common/select"
+import { Dropdown, RepoPicker } from "@/components/common/select"
+import { ColumnSettings, PrioritySettings, TagSettings } from "@/components/project"
 import { useBoard, useProjectSettings } from "@/hooks/useProjects"
 import { ApiError } from "@/services/apiClient"
 import type { TicketFormat } from "@/types/project"
@@ -62,7 +63,6 @@ export function ProjectSettingsPage() {
     setFormat.mutate(format, { onSuccess: () => toast.success("Ticket IDs updated. Existing tickets were renamed."), onError: fail })
   }
   const pad = (n: number) => String(n).padStart(format.digits, "0")
-  const sample = [format.featurePrefix, format.hotfixPrefix, format.bugfixPrefix].map((p) => `${p || "??"}-${pad(1)}`)
   const saveRepos = (e: FormEvent) => {
     e.preventDefault()
     setRepos.mutate(repos, { onSuccess: () => toast.success("Repositories updated"), onError: fail })
@@ -91,45 +91,55 @@ export function ProjectSettingsPage() {
         </form>
       </Section>
 
+      <Section title="Board columns" description="The stages on your board, left to right. Rename them, change the dot color, reorder or add your own.">
+        <ColumnSettings slug={slug} columns={board?.columns ?? []} owner={owner} />
+      </Section>
+
+      <Section title="Priorities" description="Your own priority levels, shown on every ticket as text with its color. Rename, recolor, reorder, add or remove them.">
+        <PrioritySettings slug={slug} priorities={board?.priorities ?? []} owner={owner} />
+      </Section>
+
+      <Section title="Tags" description="Labels you can put on tickets, for example frontend, api or design.">
+        <TagSettings slug={slug} tags={board?.tags ?? []} owner={owner} />
+      </Section>
+
       <Section title="Ticket IDs" description="How ticket keys are written. The key is also the branch name, so a ticket FT-00001 uses the branch FT-00001.">
         <form onSubmit={saveFormat} className="flex flex-col gap-4">
-          <div className="grid gap-3 sm:grid-cols-4">
-            {([
-              ["featurePrefix", "Feature prefix"],
-              ["hotfixPrefix", "Hotfix prefix"],
-              ["bugfixPrefix", "Bugfix prefix"],
-            ] as const).map(([field, label]) => (
-              <div key={field} className="flex flex-col gap-1.5">
-                <Label htmlFor={`fmt-${field}`}>{label}</Label>
-                <Input
-                  id={`fmt-${field}`}
-                  value={format[field]}
-                  onChange={(e) => setFormatState({ ...format, [field]: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })}
-                  maxLength={6}
-                  disabled={!owner}
-                  className="h-10 font-mono"
-                  aria-invalid={!!(setFormat.error instanceof ApiError && setFormat.error.fields[field])}
-                />
-              </div>
-            ))}
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="fmt-prefix">Prefix</Label>
+              <Input
+                id="fmt-prefix"
+                value={format.prefix}
+                onChange={(e) => setFormatState({ ...format, prefix: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") })}
+                maxLength={6}
+                disabled={!owner}
+                className="h-10 font-mono"
+                aria-invalid={!!(setFormat.error instanceof ApiError && setFormat.error.fields.prefix)}
+              />
+            </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="fmt-digits">Digits</Label>
-              <NativeSelect id="fmt-digits" value={format.digits} disabled={!owner} onChange={(e) => setFormatState({ ...format, digits: Number(e.target.value) })}>
-                {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => <option key={n} value={n}>{n}</option>)}
-              </NativeSelect>
+              <Dropdown
+                id="fmt-digits"
+                value={String(format.digits)}
+                disabled={!owner}
+                onChange={(v) => setFormatState({ ...format, digits: Number(v) })}
+                options={[1, 2, 3, 4, 5, 6, 7, 8].map((n) => ({ value: String(n), label: String(n) }))}
+              />
             </div>
           </div>
           <p className="text-sm text-muted-foreground">
-            Preview: <span className="font-mono text-foreground">{sample.join("   ")}</span>
+            Preview: <span className="font-mono text-foreground">{`${format.prefix || "??"}-${pad(1)}`}   {`${format.prefix || "??"}-${pad(2)}`}   {`${format.prefix || "??"}-${pad(3)}`}</span>
           </p>
           {setFormat.error instanceof ApiError && (
             <p className="text-sm text-destructive">{Object.values(setFormat.error.fields)[0] ?? setFormat.error.message}</p>
           )}
           <p className="text-xs text-muted-foreground">
-            Prefixes are 2 to 6 letters or digits and must differ. Saving renames every existing ticket, and the numbers stay. Branches and pull requests that use an old key stop linking.
+            The prefix is 2 to 6 letters or digits. Saving renames every existing ticket, and the numbers stay. Branches and pull requests that use an old key stop linking.
           </p>
           {owner && (
-            <Button type="submit" size="lg" disabled={!formatChanged || setFormat.isPending || format.featurePrefix.length < 2 || format.hotfixPrefix.length < 2 || format.bugfixPrefix.length < 2} className="h-10 self-start">
+            <Button type="submit" size="lg" disabled={!formatChanged || setFormat.isPending || format.prefix.length < 2} className="h-10 self-start">
               {setFormat.isPending ? "Saving" : "Save ticket IDs"}
             </Button>
           )}

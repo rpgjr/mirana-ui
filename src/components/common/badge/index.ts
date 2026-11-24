@@ -1,4 +1,6 @@
 export * from "./KeyChip"
 export * from "./PrBadge"
-export * from "./PriorityDot"
+export * from "./PriorityLabel"
+export * from "./TagChip"
 export * from "./badge"
+export * from "./ColorDot"

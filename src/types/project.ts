@@ -1,7 +1,3 @@
-export type TicketType = "FEATURE" | "HOTFIX" | "BUGFIX"
-
-export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT"
-
 export interface ProjectSummary {
   id: number
   name: string
@@ -21,29 +17,40 @@ export interface Member {
 export interface TicketCard {
   id: number
   key: string
-  type: TicketType
   title: string
-  priority: Priority
-  assigneeId: number | null
-  assigneeName: string | null
+  priorityId: number
+  assignees: { id: number; name: string }[]
   prCount: number
   prState: "OPEN" | "CLOSED" | "MERGED" | null
   commentCount: number
+  tagIds: number[]
+  createdAt: string
 }
 
 export interface Column {
   id: number
   name: string
   status: string
+  color: string
   position: number
   tickets: TicketCard[]
 }
 
 export interface TicketFormat {
   digits: number
-  featurePrefix: string
-  hotfixPrefix: string
-  bugfixPrefix: string
+  prefix: string
+}
+
+export interface Tag {
+  id: number
+  name: string
+  color: string
+}
+
+export interface PriorityConfig {
+  id: number
+  name: string
+  color: string
 }
 
 export interface Board {
@@ -51,6 +58,8 @@ export interface Board {
   columns: Column[]
   members: Member[]
   format: TicketFormat
+  tags: Tag[]
+  priorities: PriorityConfig[]
 }
 
 export interface PrLink {
@@ -66,36 +75,35 @@ export interface PrLink {
 export interface TicketDetail {
   id: number
   key: string
-  type: TicketType
   title: string
   description: string | null
-  priority: Priority
+  priorityId: number
   columnId: number
   columnName: string
   status: string
-  assigneeId: number | null
-  assigneeName: string | null
+  assignees: { id: number; name: string }[]
   createdByName: string | null
   createdAt: string
   updatedAt: string
   pullRequests: PrLink[]
   comments: { id: number; authorId: number; authorName: string; body: string; createdAt: string }[]
   events: { id: number; actorType: string; actorName: string | null; type: string; detail: string | null; createdAt: string }[]
+  tagIds: number[]
 }
 
 export interface NewTicket {
-  type: TicketType
   title: string
   description?: string
-  priority?: Priority
-  assigneeId?: number | null
+  priorityId?: number
+  assigneeIds?: number[]
   columnId?: number
+  tagIds?: number[]
 }
 
 export interface TicketPatch {
   title?: string
   description?: string
-  priority?: Priority
-  assigneeId?: number
-  clearAssignee?: boolean
+  priorityId?: number
+  assigneeIds?: number[]
+  tagIds?: number[]
 }

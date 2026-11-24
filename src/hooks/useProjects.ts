@@ -33,6 +33,39 @@ export function useProjectSettings(slug: string) {
   }
 }
 
+/** Column changes return the whole board, so the cache is replaced in one step. */
+export function useColumnMutations(slug: string) {
+  const qc = useQueryClient()
+  const done = (board: Board) => qc.setQueryData(boardKey(slug), board)
+  return {
+    add: useMutation({ mutationFn: (b: { name: string; color: string }) => api.addColumn(slug, b), onSuccess: done }),
+    update: useMutation({ mutationFn: (v: { id: number; name?: string; color?: string }) => api.updateColumn(slug, v.id, { name: v.name, color: v.color }), onSuccess: done }),
+    remove: useMutation({ mutationFn: (id: number) => api.deleteColumn(slug, id), onSuccess: done }),
+    reorder: useMutation({ mutationFn: (ids: number[]) => api.reorderColumns(slug, ids), onSuccess: done }),
+  }
+}
+
+export function useTagMutations(slug: string) {
+  const qc = useQueryClient()
+  const done = (board: Board) => qc.setQueryData(boardKey(slug), board)
+  return {
+    add: useMutation({ mutationFn: (b: { name: string; color: string }) => api.addTag(slug, b), onSuccess: done }),
+    update: useMutation({ mutationFn: (v: { id: number; name?: string; color?: string }) => api.updateTag(slug, v.id, { name: v.name, color: v.color }), onSuccess: done }),
+    remove: useMutation({ mutationFn: (id: number) => api.deleteTag(slug, id), onSuccess: done }),
+  }
+}
+
+export function usePriorityMutations(slug: string) {
+  const qc = useQueryClient()
+  const done = (board: Board) => qc.setQueryData(boardKey(slug), board)
+  return {
+    add: useMutation({ mutationFn: (b: { name: string; color: string }) => api.addPriority(slug, b), onSuccess: done }),
+    update: useMutation({ mutationFn: (v: { id: number; name?: string; color?: string }) => api.updatePriority(slug, v.id, { name: v.name, color: v.color }), onSuccess: done }),
+    remove: useMutation({ mutationFn: (id: number) => api.deletePriority(slug, id), onSuccess: done }),
+    reorder: useMutation({ mutationFn: (ids: number[]) => api.reorderPriorities(slug, ids), onSuccess: done }),
+  }
+}
+
 export function useCreateTicket(slug: string) {
   const qc = useQueryClient()
   return useMutation({

@@ -29,3 +29,27 @@ export const patchTicket = async (slug: string, key: string, b: TicketPatch) =>
 
 export const addComment = async (slug: string, key: string, body: string) =>
   (await api.post<TicketDetail>(`/api/projects/${slug}/tickets/${key}/comments`, { body })).data
+
+export const addColumn = async (slug: string, b: { name: string; color: string }) =>
+  (await api.post<Board>(`/api/projects/${slug}/columns`, b)).data
+export const updateColumn = async (slug: string, id: number, b: { name?: string; color?: string }) =>
+  (await api.patch<Board>(`/api/projects/${slug}/columns/${id}`, b)).data
+export const deleteColumn = async (slug: string, id: number) =>
+  (await api.delete<Board>(`/api/projects/${slug}/columns/${id}`)).data
+export const reorderColumns = async (slug: string, ids: number[]) =>
+  (await api.put<Board>(`/api/projects/${slug}/columns/order`, { ids })).data
+
+export const addTag = async (slug: string, b: { name: string; color: string }) =>
+  (await api.post<Board>(`/api/projects/${slug}/tags`, b)).data
+export const updateTag = async (slug: string, id: number, b: { name?: string; color?: string }) =>
+  (await api.patch<Board>(`/api/projects/${slug}/tags/${id}`, b)).data
+export const deleteTag = async (slug: string, id: number) =>
+  (await api.delete<Board>(`/api/projects/${slug}/tags/${id}`)).data
+export const addPriority = async (slug: string, b: { name: string; color: string }) =>
+  (await api.post<Board>(`/api/projects/${slug}/priorities`, b)).data
+export const updatePriority = async (slug: string, id: number, b: { name?: string; color?: string }) =>
+  (await api.patch<Board>(`/api/projects/${slug}/priorities/${id}`, b)).data
+export const deletePriority = async (slug: string, id: number) =>
+  (await api.delete<Board>(`/api/projects/${slug}/priorities/${id}`)).data
+export const reorderPriorities = async (slug: string, ids: number[]) =>
+  (await api.put<Board>(`/api/projects/${slug}/priorities/order`, { ids })).data

@@ -1,22 +1,22 @@
 import { useState, type FormEvent } from "react"
-import { LuExternalLink, LuGitMerge, LuGitPullRequest, LuGitPullRequestClosed, LuSquareArrowOutUpRight } from "react-icons/lu"
+import { LuExternalLink, LuGitMerge, LuGitPullRequest, LuGitPullRequestClosed, LuPencil, LuSquareArrowOutUpRight } from "react-icons/lu"
 import { toast } from "sonner"
 
-import { NativeSelect } from "@/components/common/select"
+import { Dropdown, MultiSelect } from "@/components/common/select"
 import { Button } from "@/components/common/button"
 import { Input } from "@/components/common/input"
-import { Label } from "@/components/common/form"
+import { Label, Markdown, MarkdownEditor } from "@/components/common/form"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/common/modal"
-import { Textarea } from "@/components/common/input"
 import { ApiError } from "@/services/apiClient"
 import { cn } from "@/utils/cn"
 
-import type { Board, Priority, PrLink, TicketDetail } from "@/types/project"
+import type { Board, PrLink, TicketDetail } from "@/types/project"
 import { useTicket, useTicketMutations } from "@/hooks/useProjects"
 import { Avatar } from "@/components/common/tile"
-import { KeyChip } from "@/components/common/badge"
-import { PRIORITIES, PRIORITY_LABEL, TYPE_LABEL } from "@/constants/ticket"
+import { ColorDot, KeyChip, TagChip } from "@/components/common/badge"
 import { timeAgo } from "@/utils/time"
+import { TicketActivity } from "./TicketActivity"
+import { AssigneePicker } from "./AssigneePicker"
 
 const fail = (e: unknown) => toast.error(e instanceof ApiError ? e.message : "Something went wrong. Try again.")
 
@@ -27,7 +27,7 @@ export function TicketModal({ board, ticketKey, onClose }: { board: Board; ticke
   const { data, isPending, isError } = useTicket(slug, ticketKey)
   return (
     <Dialog open={!!ticketKey} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[92dvh] w-[calc(100%-1.5rem)] gap-0 overflow-y-auto p-0 sm:max-w-5xl lg:max-w-6xl">
+      <DialogContent className="flex h-[94dvh] w-[calc(100%-1.5rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(1500px,96vw)]">
         <DialogTitle className="sr-only">{data ? `${data.key} ${data.title}` : "Ticket"}</DialogTitle>
         <DialogDescription className="sr-only">Ticket details, pull requests, comments and activity.</DialogDescription>
         {isPending && ticketKey && <p className="p-8 text-sm text-muted-foreground">Loading</p>}
@@ -38,28 +38,37 @@ export function TicketModal({ board, ticketKey, onClose }: { board: Board; ticke
   )
 }
 
+type Tab = "details" | "activity"
+
 export function TicketBody({ board, ticket, showNewTab }: { board: Board; ticket: TicketDetail; showNewTab?: boolean }) {
   const { patch, comment, move } = useTicketMutations(board.project.slug, ticket.key)
+  const [tab, setTab] = useState<Tab>("details")
   const [title, setTitle] = useState(ticket.title)
-  const [description, setDescription] = useState(ticket.description ?? "")
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState(ticket.description ?? "")
   const [body, setBody] = useState("")
 
   const saveTitle = () => title.trim() && title !== ticket.title && patch.mutate({ title }, { onError: fail })
-  const saveDescription = () => description !== (ticket.description ?? "") && patch.mutate({ description }, { onError: fail })
+  const startEdit = () => {
+    setDraft(ticket.description ?? "")
+    setEditing(true)
+  }
+  const saveDescription = () =>
+    patch.mutate({ description: draft }, { onSuccess: () => setEditing(false), onError: fail })
 
-  const send = (e: FormEvent) => {
-    e.preventDefault()
-    if (!body.trim()) return
+  const send = (e?: FormEvent) => {
+    e?.preventDefault()
+    if (!body.trim() || comment.isPending) return
     comment.mutate(body, { onSuccess: () => setBody(""), onError: fail })
   }
 
   return (
-    <div className="flex flex-col gap-6 p-5 pb-8 sm:p-7">
-      <div className="flex flex-col gap-3 pr-10">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex shrink-0 flex-col gap-3 px-6 pt-6 pr-14">
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-          <KeyChip ticketKey={ticket.key} type={ticket.type} className="text-xs" />
+          <KeyChip ticketKey={ticket.key} className="text-xs" />
           <span className="text-xs text-muted-foreground">
-            {TYPE_LABEL[ticket.type]} · created {timeAgo(ticket.createdAt)}
+            Created {timeAgo(ticket.createdAt)}
             {ticket.createdByName ? ` by ${ticket.createdByName}` : ""}
           </span>
           {showNewTab && (
@@ -83,17 +92,121 @@ export function TicketBody({ board, ticket, showNewTab }: { board: Board; ticket
           maxLength={200}
           className="h-auto border-transparent bg-transparent px-1 py-1 text-2xl font-semibold hover:border-input focus-visible:bg-card dark:bg-transparent"
         />
+        <div role="tablist" aria-label="Ticket sections" className="-mb-px flex gap-1 border-b border-border">
+          {(["details", "activity"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              role="tab"
+              aria-selected={tab === t}
+              onClick={() => setTab(t)}
+              className={cn("-mb-px border-b-2 border-transparent px-4 py-2.5 text-sm text-muted-foreground capitalize hover:text-foreground", tab === t && "border-foreground font-semibold text-foreground")}
+            >
+              {t}
+              {t === "activity" && <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-[11px] text-foreground">{ticket.events.length}</span>}
+              {t === "details" && ticket.comments.length > 0 && <span className="ml-2 rounded-full bg-secondary px-1.5 py-0.5 text-[11px] text-foreground">{ticket.comments.length}</span>}
+            </button>
+          ))}
+        </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
-        <div className="flex min-w-0 flex-col gap-6">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="t-desc">Description</Label>
-            <Textarea id="t-desc" value={description} onChange={(e) => setDescription(e.target.value)} onBlur={saveDescription} rows={6} placeholder="Add context, steps and links" />
-          </div>
+      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="thin-scroll flex min-w-0 flex-col gap-8 p-6 lg:min-h-0 lg:overflow-y-auto">
+          {tab === "details" ? (
+            <>
+              <section aria-labelledby="desc" className="flex flex-col gap-2.5">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 id="desc" className="text-sm font-semibold">Description</h3>
+                  {!editing && (
+                    <Button type="button" variant="outline" size="sm" onClick={startEdit}>
+                      <LuPencil data-icon="inline-start" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+                {editing ? (
+                  <>
+                    <MarkdownEditor id="t-desc" value={draft} onChange={setDraft} rows={8} autoFocus placeholder="Add context, steps, links and images. Markdown works." onSubmit={saveDescription} />
+                    <div className="flex justify-end gap-2">
+                      <Button type="button" variant="ghost" size="lg" className="h-9 text-destructive hover:text-destructive" onClick={() => setEditing(false)}>Cancel</Button>
+                      <Button type="button" size="lg" className="h-9" disabled={patch.isPending} onClick={saveDescription}>{patch.isPending ? "Saving" : "Save description"}</Button>
+                    </div>
+                  </>
+                ) : ticket.description?.trim() ? (
+                  <div className="rounded-lg border border-border bg-card/60 px-4 py-3.5"><Markdown>{ticket.description}</Markdown></div>
+                ) : (
+                  <p className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">No description yet. Use Edit to add context, steps, links and images.</p>
+                )}
+              </section>
+
+              <section aria-labelledby="comments" className="flex flex-col gap-4">
+                <h3 id="comments" className="text-sm font-semibold">Comments</h3>
+                {ticket.comments.length === 0 && <p className="text-sm text-muted-foreground">No comments yet.</p>}
+                {ticket.comments.map((c) => (
+                  <div key={c.id} className="flex gap-3">
+                    <Avatar name={c.authorName} />
+                    <div className="min-w-0 flex-1 rounded-lg border border-border bg-card/60 px-4 py-3">
+                      <div className="mb-1.5 flex items-baseline gap-2 text-sm"><span className="font-semibold">{c.authorName}</span><span className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</span></div>
+                      <Markdown>{c.body}</Markdown>
+                    </div>
+                  </div>
+                ))}
+                <form onSubmit={send} className="flex flex-col gap-2">
+                  <Label htmlFor="t-comment" className="sr-only">Add a comment</Label>
+                  <MarkdownEditor id="t-comment" value={body} onChange={setBody} rows={4} placeholder="Write a comment. Markdown works." onSubmit={() => send()} />
+                  <Button type="submit" size="lg" disabled={!body.trim() || comment.isPending} className="h-9 self-end">Comment</Button>
+                </form>
+              </section>
+            </>
+          ) : (
+            <>
+              <TicketActivity board={board} ticket={ticket} />
+            </>
+          )}
+        </div>
+
+        <aside className="thin-scroll flex min-w-0 flex-col gap-5 border-t border-border p-6 lg:min-h-0 lg:overflow-y-auto lg:border-t-0 lg:border-l">
+          <Prop label="Status" id="t-status">
+            <Dropdown
+              id="t-status"
+              value={String(ticket.columnId)}
+              onChange={(v) => move.mutate({ columnId: Number(v), position: 0 }, { onError: fail })}
+              options={board.columns.map((c) => ({ value: String(c.id), label: c.name, icon: <ColorDot color={c.color} /> }))}
+            />
+          </Prop>
+          <Prop label="Priority" id="t-priority">
+            <Dropdown
+              id="t-priority"
+              value={String(ticket.priorityId)}
+              onChange={(v) => patch.mutate({ priorityId: Number(v) }, { onError: fail })}
+              options={board.priorities.map((p) => ({ value: String(p.id), label: p.name, icon: <ColorDot color={p.color} /> }))}
+            />
+          </Prop>
+          <Prop label="Tags" id="t-tags">
+            {board.tags.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No tags yet. Add them in project settings.</p>
+            ) : (
+              <MultiSelect
+                id="t-tags"
+                placeholder="Add tags"
+                searchPlaceholder="Search tags"
+                max={8}
+                value={board.tags.filter((t) => ticket.tagIds.includes(t.id)).map((t) => t.name)}
+                options={board.tags.map((t) => ({ value: t.name, label: t.name, icon: <ColorDot color={t.color} /> }))}
+                renderChip={(name) => {
+                  const tag = board.tags.find((t) => t.name === name)
+                  return tag ? <TagChip tag={tag} /> : null
+                }}
+                onChange={(names) => patch.mutate({ tagIds: board.tags.filter((t) => names.includes(t.name)).map((t) => t.id) }, { onError: fail })}
+              />
+            )}
+          </Prop>
+          <Prop label="Assignees" id="t-assignee">
+            <AssigneePicker id="t-assignee" members={board.members} value={ticket.assignees.map((a) => a.id)} onChange={(ids) => patch.mutate({ assigneeIds: ids }, { onError: fail })} />
+          </Prop>
 
           <section aria-labelledby="prs" className="flex flex-col gap-2">
-            <h3 id="prs" className="font-mono text-xs tracking-wide text-muted-foreground uppercase">Pull requests</h3>
+            <h3 id="prs" className="text-sm font-semibold">Pull requests</h3>
             {ticket.pullRequests.length === 0 ? (
               <p className="rounded-lg border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
                 None yet. Name a branch <span className="font-mono text-foreground">{ticket.key}</span> and its pull request shows up here.
@@ -101,65 +214,6 @@ export function TicketBody({ board, ticket, showNewTab }: { board: Board; ticket
             ) : (
               ticket.pullRequests.map((p) => <PrRow key={p.id} pr={p} />)
             )}
-          </section>
-
-          <section aria-labelledby="comments" className="flex flex-col gap-3">
-            <h3 id="comments" className="font-mono text-xs tracking-wide text-muted-foreground uppercase">Comments</h3>
-            {ticket.comments.map((c) => (
-              <div key={c.id} className="flex gap-3">
-                <Avatar name={c.authorName} />
-                <div className="min-w-0 flex-1 text-sm">
-                  <div className="flex items-baseline gap-2"><span className="font-medium">{c.authorName}</span><span className="text-xs text-muted-foreground">{timeAgo(c.createdAt)}</span></div>
-                  <p className="whitespace-pre-wrap text-foreground/90">{c.body}</p>
-                </div>
-              </div>
-            ))}
-            <form onSubmit={send} className="flex flex-col gap-2">
-              <Label htmlFor="t-comment" className="sr-only">Add a comment</Label>
-              <Textarea id="t-comment" value={body} onChange={(e) => setBody(e.target.value)} rows={2} placeholder="Write a comment" />
-              <Button type="submit" size="lg" disabled={!body.trim() || comment.isPending} className="h-9 self-end">Comment</Button>
-            </form>
-          </section>
-        </div>
-
-        <aside className="flex min-w-0 flex-col gap-5 lg:border-l lg:border-border lg:pl-6">
-          <Prop label="Status" id="t-status">
-            <NativeSelect id="t-status" value={ticket.columnId} onChange={(e) => move.mutate({ columnId: Number(e.target.value), position: 0 }, { onError: fail })}>
-              {board.columns.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </NativeSelect>
-          </Prop>
-          <Prop label="Priority" id="t-priority">
-            <NativeSelect id="t-priority" value={ticket.priority} onChange={(e) => patch.mutate({ priority: e.target.value as Priority }, { onError: fail })}>
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>{PRIORITY_LABEL[p]}</option>
-              ))}
-            </NativeSelect>
-          </Prop>
-          <Prop label="Assignee" id="t-assignee">
-            <NativeSelect
-              id="t-assignee"
-              value={ticket.assigneeId ?? ""}
-              onChange={(e) => patch.mutate(e.target.value ? { assigneeId: Number(e.target.value) } : { clearAssignee: true }, { onError: fail })}
-            >
-              <option value="">Unassigned</option>
-              {board.members.map((m) => (
-                <option key={m.id} value={m.id}>{m.displayName}</option>
-              ))}
-            </NativeSelect>
-          </Prop>
-
-          <section aria-labelledby="activity" className="flex flex-col gap-2">
-            <h3 id="activity" className="font-mono text-xs tracking-wide text-muted-foreground uppercase">Activity</h3>
-            <ol className="flex flex-col gap-2 border-l border-border pl-4 text-sm text-muted-foreground">
-              {ticket.events.map((e) => (
-                <li key={e.id}>
-                  <span className="text-foreground">{e.actorType === "GITHUB" ? "GitHub" : e.actorType === "CLAUDE" ? "Claude" : (e.actorName ?? "Someone")}</span>{" "}
-                  {describe(e.type, e.detail)} · {timeAgo(e.createdAt)}
-                </li>
-              ))}
-            </ol>
           </section>
         </aside>
       </div>
@@ -201,20 +255,4 @@ function PrRow({ pr }: { pr: PrLink }) {
       </span>
     </a>
   )
-}
-
-function describe(type: string, detail: string | null): string {
-  switch (type) {
-    case "CREATED": return "created this ticket"
-    case "MOVED": return `moved it from ${detail?.replace(" to ", " to ")}`
-    case "PRIORITY_CHANGED": return `changed priority, ${detail?.toLowerCase()}`
-    case "ASSIGNED": return `assigned it to ${detail}`
-    case "UNASSIGNED": return "removed the assignee"
-    case "TITLE_CHANGED": return "edited the title"
-    case "DESCRIPTION_CHANGED": return "edited the description"
-    case "PR_OPEN": return `opened pull request ${detail}`
-    case "PR_MERGED": return `merged pull request ${detail}`
-    case "PR_CLOSED": return `closed pull request ${detail}`
-    default: return type.toLowerCase().replace(/_/g, " ")
-  }
 }
