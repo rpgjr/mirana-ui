@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import type { IconType } from "react-icons"
-import { LuArrowRight, LuCirclePlus, LuFlag, LuGitCommitHorizontal, LuGitMerge, LuGitPullRequest, LuGitPullRequestClosed, LuGithub, LuLink, LuPencil, LuTag, LuUserRound } from "react-icons/lu"
+import { LuArrowRight, LuCirclePlus, LuFlag, LuGitBranch, LuGitCommitHorizontal, LuGitMerge, LuGitPullRequest, LuGitPullRequestClosed, LuGithub, LuLink, LuPencil, LuTag, LuUserRound } from "react-icons/lu"
 
 import { ColorDot } from "@/components/common/badge"
 import { Avatar } from "@/components/common/tile"
@@ -91,14 +91,33 @@ function Row({ board, e, last }: { board: Board; e: Event; last: boolean }) {
             {new Date(e.createdAt).toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })} · {timeAgo(e.createdAt)}
           </time>
         </div>
+        {e.repo && (
+          <p className="mt-2 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs text-muted-foreground">
+            <LuGithub className="size-3.5" aria-hidden="true" />
+            <span className="font-semibold text-foreground">{e.repo}</span>
+            {e.branch && (
+              <span className="inline-flex items-center gap-1"><LuGitBranch className="size-3.5" aria-hidden="true" />{e.branch}</span>
+            )}
+          </p>
+        )}
         {sha && (
           <p className="mt-2 flex min-w-0 flex-wrap items-center gap-2">
-            <code className="rounded-md bg-secondary px-2 py-0.5 font-mono text-xs">{sha}</code>
+            {e.url ? (
+              <a href={e.url} target="_blank" rel="noreferrer" className="rounded-md bg-secondary px-2 py-0.5 font-mono text-xs underline-offset-2 hover:underline">{sha}</a>
+            ) : (
+              <code className="rounded-md bg-secondary px-2 py-0.5 font-mono text-xs">{sha}</code>
+            )}
             <span className="min-w-0 truncate font-medium">{message}</span>
             {author && <span className="text-xs text-muted-foreground">by {author}</span>}
           </p>
         )}
-        {isPr && e.detail && <p className="mt-2 inline-block rounded-md bg-secondary px-2 py-0.5 font-mono text-xs">{e.detail}</p>}
+        {isPr && e.detail && (
+          e.url ? (
+            <a href={e.url} target="_blank" rel="noreferrer" className="mt-2 inline-block rounded-md bg-secondary px-2 py-0.5 font-mono text-xs underline-offset-2 hover:underline">{e.detail}</a>
+          ) : (
+            <p className="mt-2 inline-block rounded-md bg-secondary px-2 py-0.5 font-mono text-xs">{e.detail}</p>
+          )
+        )}
       </div>
     </li>
   )

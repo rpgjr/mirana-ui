@@ -244,6 +244,7 @@ function PrRow({ pr }: { pr: PrLink }) {
     >
       <Icon className={cn("size-[18px]", PR_TONE[pr.state])} aria-hidden="true" />
       <span className="min-w-0">
+        <span className="block truncate font-mono text-[11px] font-semibold text-muted-foreground">{pr.repo}</span>
         <span className="block truncate text-sm font-medium">{pr.title ?? `Pull request #${pr.number}`}</span>
         <span className="block truncate font-mono text-[11px] text-muted-foreground">#{pr.number} · {pr.branch}</span>
       </span>

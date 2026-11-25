@@ -21,8 +21,7 @@ import { dotStyle } from "@/utils/color"
 import type { Board, Column, TicketCard } from "@/types/project"
 import { useMoveTicket } from "@/hooks/useProjects"
 import { AvatarStack } from "@/components/common/tile"
-import { KeyChip } from "@/components/common/badge"
-import { PriorityLabel } from "@/components/common/badge"
+import { KeyChip, PrBadge, PriorityLabel } from "@/components/common/badge"
 import { TagOverflow } from "@/components/project/TagOverflow"
 
 const COLUMN_ID = (id: number) => `col-${id}`
@@ -138,9 +137,12 @@ function Card({ ticket, board, basePath, dragProps, overlay }: { ticket: TicketC
       </span>
       <span className="flex min-h-[4.5rem] flex-col gap-1.5">
         <span className="line-clamp-2 text-base leading-snug font-semibold text-foreground">{ticket.title}</span>
-        <time dateTime={ticket.createdAt} title={new Date(ticket.createdAt).toLocaleString()} className="text-xs text-muted-foreground">
-          {new Date(ticket.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
-        </time>
+        <span className="flex items-center gap-3 text-xs text-muted-foreground">
+          <time dateTime={ticket.createdAt} title={new Date(ticket.createdAt).toLocaleString()}>
+            {new Date(ticket.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+          </time>
+          <PrBadge count={ticket.prCount} state={ticket.prState} />
+        </span>
       </span>
       <span className="flex h-7 items-center gap-3">
         <span className="min-w-0 flex-1">

@@ -87,7 +87,7 @@ export interface TicketDetail {
   updatedAt: string
   pullRequests: PrLink[]
   comments: { id: number; authorId: number; authorName: string; body: string; createdAt: string }[]
-  events: { id: number; actorType: string; actorName: string | null; type: string; detail: string | null; createdAt: string }[]
+  events: { id: number; actorType: string; actorName: string | null; type: string; detail: string | null; createdAt: string; repo: string | null; branch: string | null; url: string | null }[]
   tagIds: number[]
 }
 
